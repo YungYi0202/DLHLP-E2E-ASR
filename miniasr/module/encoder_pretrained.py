@@ -6,7 +6,7 @@
 
 import torch
 from torch import nn
-from transformers import AutoModel
+from transformers import AutoModel, HubertModel, HubertConfig
 
 class PretrainedEncoder(nn.Module):
     '''
@@ -16,7 +16,10 @@ class PretrainedEncoder(nn.Module):
     def __init__(self, model_name, trainable):
         super().__init__()
 
-        self.model = AutoModel.from_pretrained(model_name)
+        # self.model = AutoModel.from_pretrained(model_name)
+        configuration = HubertConfig(conv_dim = (512, 512, 512, 512, 512, 512), conv_stride = (5, 2, 2, 2, 2, 2), conv_kernel = (10, 3, 3, 3, 2, 2))
+        self.model = HubertModel(configuration)
+
         for p in self.model.parameters():
             # Unfreeze the pretrained model
             p.requires_grad = trainable
@@ -40,8 +43,8 @@ class PretrainedEncoder(nn.Module):
         enc_len = enc_len.floor().to(dtype=torch.int)
         #print("enc_len")
         #print(enc_len)
-        #print("last_hidden_state.shape")
-        #print(last_hidden_state.shape)
+        print("last_hidden_state.shape")
+        print(last_hidden_state.shape)
 
         return last_hidden_state, enc_len
 
