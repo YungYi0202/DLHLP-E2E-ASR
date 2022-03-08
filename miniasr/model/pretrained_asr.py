@@ -14,6 +14,7 @@ from miniasr.model.base_asr import BaseASR
 from miniasr.module import PretrainedEncoder
 import torchaudio
 
+from transformers import Wav2Vec2Processor, HubertForCTC
 
 class ASR(BaseASR):
     '''
@@ -25,7 +26,9 @@ class ASR(BaseASR):
 
         # Main model setup
         # self.in_dim is defined in base_asr.py: self.in_dim = self.feat_select.feat_dim
-        self.encoder = PretrainedEncoder(self.args.model.encoder.name, self.args.model.encoder.trainable)
+        self.processor = Wav2Vec2Processor.from_pretrained("facebook/hubert-large-ls960-ft")
+        self.model = HubertForCTC.from_pretrained("facebook/hubert-large-ls960-ft")
+        # self.encoder = PretrainedEncoder(self.args.model.encoder.name, self.args.model.encoder.trainable)
 
         self.ctc_output_layer = nn.Linear(
             self.encoder.out_dim, self.vocab_size)
@@ -106,23 +109,12 @@ class ASR(BaseASR):
                 feat [float tensor]: extracted features
                 feat_len [long tensor]: length of extracted features
         '''
-
-        # Extract features
-        # feat, feat_len = self.extract_features(wave, wave_len)
-        # print("PretrainedEncoder: feat.shape")
-        # print(feat.shape)
+        # waveform = rnn.pad_sequence(wave, batch_first=True)
+        input_values = processor(wave, return_tensors="pt").input_values  # Batch size 1
         
-        # print(f"len(wave): {len(wave)}")
-        # for i in range(len(wave)):
-        #    print(f"wave[{i}].shape")
-        #    print(wave[i].shape)
-        # print(f"wave_len: {wave_len}")
-        waveform = rnn.pad_sequence(wave, batch_first=True)
-        # print("waveform.shape")
-        # print(waveform.shape)
-
         # Encode features
-        enc, enc_len = self.encoder(waveform, wave_len)
+        # enc, enc_len = self.encoder(waveform, wave_len)
+        enc, enc_len = self.encoder(input_values, wave_len)
 
         # Project hidden features to vocabularies
         logits = self.ctc_output_layer(enc)

@@ -17,8 +17,9 @@ class PretrainedEncoder(nn.Module):
         super().__init__()
 
         # self.model = AutoModel.from_pretrained(model_name)
-        configuration = HubertConfig(conv_dim = (512, 512, 512, 512, 512, 512), conv_stride = (5, 2, 2, 2, 2, 2), conv_kernel = (10, 3, 3, 3, 2, 2))
-        self.model = HubertModel(configuration)
+        # configuration = HubertConfig(conv_dim = (512, 512, 512, 512, 512, 512), conv_stride = (5, 2, 2, 2, 2, 2), conv_kernel = (10, 3, 3, 3, 2, 2))
+        # self.model = HubertModel(configuration)
+        self.model = HubertModel.from_pretrained("facebook/hubert-large-ls960-ft")
 
         for p in self.model.parameters():
             # Unfreeze the pretrained model
@@ -27,16 +28,8 @@ class PretrainedEncoder(nn.Module):
         # Output dimension
         self.out_dim = 768
 
-    def forward(self, waveform: torch.Tensor, wave_len: torch.Tensor):
-        '''
-            Input:
-                feat [float tensor]: acoustic feature sequence
-                feat_len [long tensor]: feature lengths
-            Output:
-                out [float tensor]: encoded feature sequence
-                out_len [long tensor]: encoded feature lengths
-        '''
-        output = self.model(waveform)
+    def forward(self, inputs: torch.Tensor, wave_len: torch.Tensor):
+        output = self.model(inputs)
         last_hidden_state = output.last_hidden_state
         
         enc_len = wave_len * ( last_hidden_state.shape[1] / torch.max(wave_len) )
