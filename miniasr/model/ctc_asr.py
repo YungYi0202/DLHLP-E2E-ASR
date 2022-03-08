@@ -121,8 +121,18 @@ class ASR(BaseASR):
 
     def cal_loss(self, logits, enc_len, feat, feat_len, text, text_len):
         ''' Computes CTC loss. '''
+       
+        print("ctc_asr: logits.shape")
+        print(logits.shape)
 
         log_probs = torch.log_softmax(logits, dim=2)
+        
+        print("ctc_asr: log_probs.shape")
+        print(log_probs.shape)
+        print(f"ctc_asr: enc_len:{enc_len}")
+        print("ctc_asr: text.shape")
+        print(text.shape)
+        print(f"ctc_asr: text_len:{text_len}")
 
         # Compute loss
         with torch.backends.cudnn.flags(deterministic=True):
