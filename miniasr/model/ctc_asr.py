@@ -109,8 +109,18 @@ class ASR(BaseASR):
         '''
 
         # Extract features
+        # print("ctc_asr: wave.shape")
+        # print(wave.shape)
+        # print("ctc_asr: wave_len")
+        # print(wave_len)
+        
         feat, feat_len = self.extract_features(wave, wave_len)
 
+        # print("ctc_asr: feat.shape")
+        # print(feat.shape)
+        # print("ctc_asr: feat_len")
+        # print(feat_len)
+        
         # Encode features
         enc, enc_len = self.encoder(feat, feat_len)
 

@@ -8,6 +8,7 @@ import logging
 import numpy as np
 import torch
 from torch import nn
+from torch.nn.utils import rnn
 
 from miniasr.model.base_asr import BaseASR
 from miniasr.module import PretrainedEncoder
@@ -107,19 +108,26 @@ class ASR(BaseASR):
         '''
 
         # Extract features
-        feat, feat_len = self.extract_features(wave, wave_len)
-        # waveform, sample_rate = torchaudio.load(wave)
-        # waveform = waveform.squeeze()
-        # print("PretrainedEncoder: waveform.shape")
-        # print(waveform.shape)
+        # feat, feat_len = self.extract_features(wave, wave_len)
+        # print("PretrainedEncoder: feat.shape")
+        # print(feat.shape)
+        
+        # print(f"len(wave): {len(wave)}")
+        # for i in range(len(wave)):
+        #    print(f"wave[{i}].shape")
+        #    print(wave[i].shape)
+        #print(f"wave_len: {wave_len}")
+        waveform = rnn.pad_sequence(wave, batch_first=True)
+        print("waveform.shape")
+        print(waveform.shape)
 
         # Encode features
-        enc, enc_len = self.encoder(feat, feat_len)
+        enc, enc_len = self.encoder(waveform, wave_len)
 
         # Project hidden features to vocabularies
         logits = self.ctc_output_layer(enc)
 
-        return logits, enc_len, feat, feat_len
+        return logits, enc_len, None, None
 
     def cal_loss(self, logits, enc_len, feat, feat_len, text, text_len):
         ''' Computes CTC loss. '''
