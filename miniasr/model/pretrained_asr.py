@@ -25,7 +25,7 @@ class ASR(BaseASR):
 
         # Main model setup
         # self.in_dim is defined in base_asr.py: self.in_dim = self.feat_select.feat_dim
-        self.encoder = PretrainedEncoder(self.args.model.name)
+        self.encoder = PretrainedEncoder(self.args.model.encoder.name, self.args.model.encoder.trainable)
 
         self.ctc_output_layer = nn.Linear(
             self.encoder.out_dim, self.vocab_size)
@@ -116,10 +116,10 @@ class ASR(BaseASR):
         # for i in range(len(wave)):
         #    print(f"wave[{i}].shape")
         #    print(wave[i].shape)
-        #print(f"wave_len: {wave_len}")
+        # print(f"wave_len: {wave_len}")
         waveform = rnn.pad_sequence(wave, batch_first=True)
-        print("waveform.shape")
-        print(waveform.shape)
+        # print("waveform.shape")
+        # print(waveform.shape)
 
         # Encode features
         enc, enc_len = self.encoder(waveform, wave_len)

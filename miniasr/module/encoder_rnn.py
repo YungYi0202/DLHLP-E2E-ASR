@@ -48,9 +48,9 @@ class RNNEncoder(nn.Module):
 
         if not self.training:
             self.rnn.flatten_parameters()
-        print("RNNEncoder: feat.shape")
-        print(feat.shape)
+        # print("RNNEncoder: feat.shape")
+        # print(feat.shape)
         out, _ = self.rnn(feat)
-        print("RNNEncoder: out.shape")
-        print(out.shape)
+        # print("RNNEncoder: out.shape")
+        # print(out.shape)
         return out, feat_len
