@@ -25,8 +25,7 @@ def create_asr_trainer(args, device):
         if args.model.name == 'ctc_asr':
             from miniasr.model.ctc_asr import ASR
         else:
-            raise NotImplementedError(
-                '{} ASR type is not supported.'.format(args.model.name))
+            from miniasr.model.pretrained_asr import ASR
 
         model = ASR(tokenizer, args).to(device)
 
