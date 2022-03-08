@@ -15,23 +15,23 @@ model:
     feature: hidden_states
   encoder: # No need
     name: facebook/hubert-base-ls960
-    trainable: false
+    trainable: true
   optim:
     algo: Adam
     kwargs:
       lr: 0.0001
-  specaugment:
-    freq_mask_range: [0, 20]
-    freq_mask_num: 2
-    time_mask_range: [0, 40]
-    time_mask_num: 2
-    time_mask_max: 1.0
-    time_warp_w: 80
+  # specaugment:
+  #  freq_mask_range: [0, 20]
+  #  freq_mask_num: 2
+  #  time_mask_range: [0, 40]
+  #  time_mask_num: 2
+  #  time_mask_max: 1.0
+  #  time_warp_w: 80
 
 hparam:
-  train_batch_size: 32
-  val_batch_size: 32
-  accum_grad: 1
+  train_batch_size: 2
+  val_batch_size: 2
+  accum_grad: 8
   grad_clip: 5
   njobs: 4
   pin_memory: true

@@ -33,28 +33,29 @@ if [ ${stage} -le 2 ] && [ ${stop_stage} -ge 2 ]; then
     run_preprocess.py \
         -c LibriSpeech \
         -p data/librispeech_finetuning \
-        -s 1h \
-        -o data/libri_train_1h \
+        -s 9h \
+        -o data/libri_train_9h \
         --gen-vocab \
-        --char-vocab-size 40
+    	--subword-vocab-size 500 \
+	--gen-subword
 
     run_preprocess.py \
         -c LibriSpeech \
         -p data/librispeech_finetuning \
-        -s 9h \
-        -o data/libri_train_9h
+        -s 1h \
+        -o data/libri_train_1h
 
-    run_preprocess.py \
-        -c LibriSpeech \
-        -p data/LibriSpeech \
-        -s dev-clean \
-        -o data/libri_dev
+    #run_preprocess.py \
+    #    -c LibriSpeech \
+    #    -p data/LibriSpeech \
+    #    -s dev-clean \
+    #    -o data/libri_dev
 
-    run_preprocess.py \
-        -c LibriSpeech \
-        -p data/LibriSpeech \
-        -s test-clean \
-        -o data/libri_test
+    #run_preprocess.py \
+    #    -c LibriSpeech \
+    #    -p data/LibriSpeech \
+    #    -s test-clean \
+    #    -o data/libri_test
 fi
 
 if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
@@ -63,7 +64,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
 
     if [ -z "$ckpt" ]; then
         run_asr.py \
-            --config config/train_pretrained_example.yaml \
+            --config config/train.yaml \
             --override "args.trainer.default_root_dir=\"model/${model_name}\""
     else
         echo "Resume training from $ckpt"

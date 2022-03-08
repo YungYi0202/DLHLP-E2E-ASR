@@ -43,8 +43,8 @@ class PretrainedEncoder(nn.Module):
         enc_len = enc_len.floor().to(dtype=torch.int)
         #print("enc_len")
         #print(enc_len)
-        print("last_hidden_state.shape")
-        print(last_hidden_state.shape)
+        #print("last_hidden_state.shape")
+        #print(last_hidden_state.shape)
 
         return last_hidden_state, enc_len
 
