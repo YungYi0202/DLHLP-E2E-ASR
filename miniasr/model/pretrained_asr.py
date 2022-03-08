@@ -11,6 +11,7 @@ from torch import nn
 
 from miniasr.model.base_asr import BaseASR
 from miniasr.module import PretrainedEncoder
+import torchaudio
 
 
 class ASR(BaseASR):
@@ -107,6 +108,10 @@ class ASR(BaseASR):
 
         # Extract features
         feat, feat_len = self.extract_features(wave, wave_len)
+        # waveform, sample_rate = torchaudio.load(wave)
+        # waveform = waveform.squeeze()
+        # print("PretrainedEncoder: waveform.shape")
+        # print(waveform.shape)
 
         # Encode features
         enc, enc_len = self.encoder(feat, feat_len)
