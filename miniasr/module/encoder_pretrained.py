@@ -13,17 +13,24 @@ class PretrainedEncoder(nn.Module):
         Pretrained encoder.
     '''
 
-    def __init__(self, model_name, trainable):
+    def __init__(self, model_name, trainable, start_from_zero):
         super().__init__()
-
-        self.model = AutoModel.from_pretrained(model_name)
-        # configuration = HubertConfig(conv_dim = (512, 512, 512, 512, 512, 512), conv_stride = (5, 2, 2, 2, 2, 2), conv_kernel = (10, 3, 3, 3, 2, 2))
-        # self.model = HubertModel(configuration)
+        print(start_from_zero)
+        if start_from_zero == False:
+            print("AutoModel from pretrained")
+            self.model = AutoModel.from_pretrained(model_name)
+        else:
+            if 'hubert' in model_name or 'Hubert' in model_name or 'HuBERT' in model_name:
+                print("Start from zero! HuBERT")
+                configuration = HubertConfig()
+                self.model = HubertModel(configuration)
+            else:
+                raise NotImplementedError(f'Unknown encoder {model_name}(start_from_zero).')
         #self.model = HubertModel.from_pretrained("facebook/hubert-large-ls960-ft")
 
-        #for p in self.model.parameters():
-        #    # Unfreeze the pretrained model
-        #    p.requires_grad = trainable
+        for p in self.model.parameters():
+            # Unfreeze the pretrained model
+            p.requires_grad = trainable
 
         # Output dimension
         self.out_dim = self.model.config.hidden_size

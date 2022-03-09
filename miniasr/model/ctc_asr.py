@@ -11,6 +11,8 @@ from torch import nn
 
 from miniasr.model.base_asr import BaseASR
 from miniasr.module import TransformerEncoder
+from miniasr.module import CLDNNEncoder
+# from miniasr.module import LongformerEncoder
 
 
 class ASR(BaseASR):
@@ -25,7 +27,21 @@ class ASR(BaseASR):
         if self.args.model.encoder.module in ['RNN', 'GRU', 'LSTM']:
             self.encoder = RNNEncoder(self.in_dim, **args.model.encoder)
         elif self.args.model.encoder.module in ['Transformer']:
-            self.encoder = TransformerEncoder(self.in_dim, **args.model.encoder)
+            self.encoder = TransformerEncoder(self.in_dim,
+                    args.model.encoder.hid_dim,
+                    args.model.encoder.n_layers,
+                    args.model.encoder.dropout,
+                    args.model.encoder.n_head,
+                    )
+        # elif self.args.model.encoder.module in ['Longformer']:
+        #     self.encoder  = LongformerEncoder(self.in_dim,
+        #             args.model.encoder.hid_dim,
+        #             args.model.encoder.n_layers,
+        #             args.model.encoder.dropout,
+        #             args.model.encoder.n_head,
+        #             )
+        elif self.args.model.encoder.module in ['CLDNN']:
+            self.encoder = CLDNNEncoder(self.in_dim, self.args)
         else:
             raise NotImplementedError(
                 f'Unkown encoder module {self.args.model.encoder.module}')

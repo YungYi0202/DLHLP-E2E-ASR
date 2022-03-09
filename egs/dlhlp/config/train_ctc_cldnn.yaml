@@ -8,31 +8,47 @@ data:
     vocab: data/libri_train_1h/vocab_char.txt
 
 model:
-  name: pretrained
-  extractor: # No need
+  name: ctc_asr
+  extractor:
     name: fbank
     train: false
     feature: hidden_states
-  encoder: # No need
-    name: facebook/hubert-base-ls960
-    trainable: true
-    start_from_zero: true
+  encoder:
+    module: CLDNN
+    conv1:
+      kernel: 9
+      out_channels: 256
+      padding: 0
+    maxpool:
+      kernel: 3
+      stride: 3
+      padding: 0
+    conv2:
+      kernel: 3
+      out_channels: 256
+      padding: 0
+    reduced_feat_dim: 256
+    lstm:
+      hid_dim: 256
+      n_layers: 3
+      bidirectional: true
+      dropout: 0.2
   optim:
     algo: Adam
     kwargs:
-      lr: 0.00001
-  # specaugment:
-  #  freq_mask_range: [0, 20]
-  #  freq_mask_num: 2
-  #  time_mask_range: [0, 40]
-  #  time_mask_num: 2
-  #  time_mask_max: 1.0
-  #  time_warp_w: 80
+      lr: 0.0001
+  specaugment:
+    freq_mask_range: [0, 20]
+    freq_mask_num: 2
+    time_mask_range: [0, 40]
+    time_mask_num: 2
+    time_mask_max: 1.0
+    time_warp_w: 80
 
 hparam:
-  train_batch_size: 4
-  val_batch_size: 4
-  accum_grad: 8
+  train_batch_size: 8
+  val_batch_size: 8
+  accum_grad: 4
   grad_clip: 5
   njobs: 4
   pin_memory: true

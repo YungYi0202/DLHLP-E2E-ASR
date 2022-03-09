@@ -4,7 +4,7 @@
 
 stage=3
 stop_stage=3
-model_name=ctc_transformer
+model_name=hubert_encoder_zero
 ckpt=  # model/ctc_libri-10h_char/epoch=44-step=3869.ckpt
 
 
@@ -64,7 +64,7 @@ if [ ${stage} -le 3 ] && [ ${stop_stage} -ge 3 ]; then
 
     if [ -z "$ckpt" ]; then
         run_asr.py \
-            --config config/train_ctc_transformer.yaml \
+            --config config/train_pretrained_example.yaml \
             --override "args.trainer.default_root_dir=\"model/${model_name}\""
     else
         echo "Resume training from $ckpt"

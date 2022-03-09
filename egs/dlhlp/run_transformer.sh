@@ -2,10 +2,10 @@
 
 . ./path.sh || exit 1;
 
-stage=3
-stop_stage=3
+stage=4
+stop_stage=4
 model_name=ctc_transformer
-ckpt=  # model/ctc_libri-10h_char/epoch=44-step=3869.ckpt
+ckpt=model/ctc_transformer/epoch=249-step=21749.ckpt
 
 
 if [ ${stage} -le 1 ] && [ ${stop_stage} -ge 1 ]; then

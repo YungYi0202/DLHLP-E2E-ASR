@@ -6,9 +6,10 @@
 
 import torch
 from torch import nn
+from transformers import LongformerConfig, LongformerModel
 
 
-class TransformerEncoder(nn.Module):
+class LongformerEncoder(nn.Module):
     '''
         Transformer encoder.
         in_dim [int]: input feature dimension
@@ -20,17 +21,11 @@ class TransformerEncoder(nn.Module):
     def __init__(self, in_dim, hid_dim, n_layers, dropout=0, n_head=8):
         super().__init__()
 
-        self.encoder_layer = nn.TransformerEncoderLayer(
-            d_model=in_dim, 
-            nhead=n_head,
-            dim_feedforward=hid_dim,
-            dropout=dropout,
-        )
-        
-        self.transformer_encoder = nn.TransformerEncoder(
-            self.encoder_layer, 
-            num_layers=n_layers
-        )
+        configuration = LongformerConfig()
+        configuration.hidden_size = hid_dim
+        configuration.num_hidden_layers = n_layers
+        configuration.num_attention_heads = n_head
+        self.encoder = LongformerModel(configuration)
 
         # Output dimension
         self.out_dim = in_dim
@@ -50,7 +45,7 @@ class TransformerEncoder(nn.Module):
         #print("TransformerEncoder: feat.shape")
         #print(feat.shape)
         #out, _ = self.rnn(feat)
-        out = self.transformer_encoder(feat.transpose(0,1))
+        out = self.encoder(feat.transpose(0,1))
         #print("TransformerEncoder: out.shape")
         #print(out.shape)
         return out.transpose(0,1) , feat_len

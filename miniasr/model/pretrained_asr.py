@@ -28,7 +28,11 @@ class ASR(BaseASR):
         # self.in_dim is defined in base_asr.py: self.in_dim = self.feat_select.feat_dim
         # self.processor = Wav2Vec2FeatureExtractor(feature_size=4, padding=True)
         # self.encoder = HubertForCTC.from_pretrained("facebook/hubert-large-ls960-ft")
-        self.encoder = PretrainedEncoder(self.args.model.encoder.name, self.args.model.encoder.trainable)
+        self.encoder = PretrainedEncoder(
+            self.args.model.encoder.name, 
+            self.args.model.encoder.trainable,
+            self.args.model.encoder.start_from_zero, 
+            )
 
         self.ctc_output_layer = nn.Linear(
             self.encoder.out_dim, self.vocab_size)
