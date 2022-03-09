@@ -8,30 +8,33 @@ data:
     vocab: data/libri_train_1h/vocab_char.txt
 
 model:
-  name: pretrained
+  name: ctc_asr
   extractor:
-    name: fbank
+    name: hubert_base
     train: false
     feature: hidden_states
-  encoder: # No need
-    name: facebook/hubert-base-ls960
-    trainable: true
+  encoder:
+    hid_dim: 512
+    n_layers: 2
+    module: LSTM
+    bidirectional: true
+    dropout: 0.2
   optim:
     algo: Adam
     kwargs:
-      lr: 0.00001
-  # specaugment:
-  #  freq_mask_range: [0, 20]
-  #  freq_mask_num: 2
-  #  time_mask_range: [0, 40]
-  #  time_mask_num: 2
-  #  time_mask_max: 1.0
-  #  time_warp_w: 80
+      lr: 0.0001
+  specaugment:
+    freq_mask_range: [0, 20]
+    freq_mask_num: 2
+    time_mask_range: [0, 40]
+    time_mask_num: 2
+    time_mask_max: 1.0
+    time_warp_w: 80
 
 hparam:
-  train_batch_size: 2
-  val_batch_size: 2
-  accum_grad: 8
+  train_batch_size: 16
+  val_batch_size: 16
+  accum_grad: 2
   grad_clip: 5
   njobs: 4
   pin_memory: true
@@ -42,7 +45,7 @@ checkpoint_callbacks:
   save_top_k: 5  # -1: all ckpts will be saved
 
 trainer:
-  max_epochs: 500
+  max_epochs: 100
   max_steps: 100000
   check_val_every_n_epoch: 5
   gpus: 1
@@ -50,5 +53,5 @@ trainer:
   logger: true
   log_every_n_steps: 5
   flush_logs_every_n_steps: 5
-  default_root_dir: model/ctc_libri-10h_char
+  default_root_dir: model/ctc_hubert
   deterministic: true

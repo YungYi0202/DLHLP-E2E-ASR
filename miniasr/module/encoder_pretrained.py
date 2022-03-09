@@ -16,17 +16,17 @@ class PretrainedEncoder(nn.Module):
     def __init__(self, model_name, trainable):
         super().__init__()
 
-        # self.model = AutoModel.from_pretrained(model_name)
+        self.model = AutoModel.from_pretrained(model_name)
         # configuration = HubertConfig(conv_dim = (512, 512, 512, 512, 512, 512), conv_stride = (5, 2, 2, 2, 2, 2), conv_kernel = (10, 3, 3, 3, 2, 2))
         # self.model = HubertModel(configuration)
-        self.model = HubertModel.from_pretrained("facebook/hubert-large-ls960-ft")
+        #self.model = HubertModel.from_pretrained("facebook/hubert-large-ls960-ft")
 
-        for p in self.model.parameters():
-            # Unfreeze the pretrained model
-            p.requires_grad = trainable
+        #for p in self.model.parameters():
+        #    # Unfreeze the pretrained model
+        #    p.requires_grad = trainable
 
         # Output dimension
-        self.out_dim = 768
+        self.out_dim = self.model.config.hidden_size
 
     def forward(self, inputs: torch.Tensor, wave_len: torch.Tensor):
         output = self.model(inputs)

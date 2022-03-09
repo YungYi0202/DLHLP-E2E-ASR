@@ -14,7 +14,7 @@ from miniasr.model.base_asr import BaseASR
 from miniasr.module import PretrainedEncoder
 import torchaudio
 
-from transformers import Wav2Vec2Processor, HubertForCTC
+from transformers import Wav2Vec2FeatureExtractor, HubertForCTC
 
 class ASR(BaseASR):
     '''
@@ -26,16 +26,18 @@ class ASR(BaseASR):
 
         # Main model setup
         # self.in_dim is defined in base_asr.py: self.in_dim = self.feat_select.feat_dim
-        self.processor = Wav2Vec2Processor.from_pretrained("facebook/hubert-large-ls960-ft")
-        self.model = HubertForCTC.from_pretrained("facebook/hubert-large-ls960-ft")
-        # self.encoder = PretrainedEncoder(self.args.model.encoder.name, self.args.model.encoder.trainable)
+        # self.processor = Wav2Vec2FeatureExtractor(feature_size=4, padding=True)
+        # self.encoder = HubertForCTC.from_pretrained("facebook/hubert-large-ls960-ft")
+        self.encoder = PretrainedEncoder(self.args.model.encoder.name, self.args.model.encoder.trainable)
 
         self.ctc_output_layer = nn.Linear(
             self.encoder.out_dim, self.vocab_size)
-
+        #self.ctc_output_layer = nn.Linear(
+        #   self.encoder.config.hidden_size, self.vocab_size)
+        
         # Loss function (CTC loss)
         self.ctc_loss = torch.nn.CTCLoss(blank=0, zero_infinity=True)
-
+        
         # Beam decoding with Flashlight
         self.enable_beam_decode = False
         if self.args.mode in {'dev', 'test'} and self.args.decode.type == 'beam':
@@ -109,14 +111,19 @@ class ASR(BaseASR):
                 feat [float tensor]: extracted features
                 feat_len [long tensor]: length of extracted features
         '''
-        # waveform = rnn.pad_sequence(wave, batch_first=True)
-        input_values = processor(wave, return_tensors="pt").input_values  # Batch size 1
-        
+        waveform = rnn.pad_sequence(wave, batch_first=True)
+        #input_values = self.processor(wave, return_tensors="pt", padding=True).input_values
+        #print(f"torch.max(wave_len): {torch.max(wave_len)}")
+        #print(f"waveform.shape: {waveform.shape}")
+        #print(f"input_values.shape: {input_values.shape}")
+
+
         # Encode features
-        # enc, enc_len = self.encoder(waveform, wave_len)
-        enc, enc_len = self.encoder(input_values, wave_len)
+        enc, enc_len = self.encoder(waveform, wave_len)
+        #enc, enc_len = self.encoder(input_values, wave_len)
 
         # Project hidden features to vocabularies
+        # print(f"enc.shape: {enc.shape}")
         logits = self.ctc_output_layer(enc)
 
         return logits, enc_len, None, None
