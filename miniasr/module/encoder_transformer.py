@@ -25,7 +25,6 @@ class TransformerEncoder(nn.Module):
             nhead=n_head,
             dim_feedforward=hid_dim,
             dropout=dropout,
-            batch_first=True
         )
         
         self.transformer_encoder = nn.TransformerEncoder(
@@ -51,7 +50,7 @@ class TransformerEncoder(nn.Module):
         print("TransformerEncoder: feat.shape")
         print(feat.shape)
         #out, _ = self.rnn(feat)
-        out = self.transformer_encoder(feat)
+        out = self.transformer_encoder(feat.transpose(0,1))
         print("TransformerEncoder: out.shape")
         print(out.shape)
         return out, feat_len
