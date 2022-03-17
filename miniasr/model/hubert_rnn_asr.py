@@ -10,11 +10,8 @@ import torch
 from torch import nn
 
 from miniasr.model.base_asr import BaseASR
-from miniasr.module import TransformerEncoder
-from miniasr.module import ConformerEncoder
-from miniasr.module import CLDNNEncoder
 from miniasr.module import RNNEncoder
-from miniasr.module import LongformerEncoder
+from miniasr.module import HubertEncoder
 
 
 class ASR(BaseASR):
@@ -26,38 +23,17 @@ class ASR(BaseASR):
         super().__init__(tokenizer, args)
 
         # Main model setup
-        if self.args.model.encoder.module in ['RNN', 'GRU', 'LSTM']:
-            self.encoder = RNNEncoder(self.in_dim, **args.model.encoder)
-        elif self.args.model.encoder.module in ['Transformer']:
-            self.encoder = TransformerEncoder(self.in_dim,
-                    args.model.encoder.hid_dim,
-                    args.model.encoder.n_layers,
-                    args.model.encoder.dropout,
-                    args.model.encoder.n_head,
-                    )
-        elif self.args.model.encoder.module in ['Conformer']:
-            self.encoder = ConformerEncoder(self.in_dim,
-                    args.model.encoder.hid_dim,
-                    args.model.encoder.n_layers,
-                    args.model.encoder.dropout,
-                    args.model.encoder.n_head,
-                    args.model.encoder.conv_kernel,
-                    )
-        elif self.args.model.encoder.module in ['Longformer']:
-            self.encoder  = LongformerEncoder(self.in_dim,
-                    args.model.encoder.hid_dim,
-                    args.model.encoder.n_layers,
-                    args.model.encoder.dropout,
-                    args.model.encoder.n_head,
-                    )
-        elif self.args.model.encoder.module in ['CLDNN']:
-            self.encoder = CLDNNEncoder(self.in_dim, self.args)
+        self.hubert = HubertEncoder()
+        self.enable_rnn = args.model.enable_rnn
+        
+        if self.enable_rnn:
+            self.rnn_block = RNNEncoder(self.hubert.out_dim, **args.model.rnn)
+            self.encoder_out_dim = self.rnn_block.out_dim
         else:
-            raise NotImplementedError(
-                f'Unkown encoder module {self.args.model.encoder.module}')
+            self.encoder_out_dim = self.hubert.out_dim
 
         self.ctc_output_layer = nn.Linear(
-            self.encoder.out_dim, self.vocab_size)
+            self.encoder_out_dim, self.vocab_size)
 
         # Loss function (CTC loss)
         self.ctc_loss = torch.nn.CTCLoss(blank=0, zero_infinity=True)
@@ -136,27 +112,14 @@ class ASR(BaseASR):
                 feat_len [long tensor]: length of extracted features
         '''
 
-        # Extract features
-        # print("ctc_asr: wave.shape")
-        # print(wave.shape)
-        # print("ctc_asr: wave_len")
-        # print(wave_len)
-        
-        feat, feat_len = self.extract_features(wave, wave_len)
-
-        # print("ctc_asr: feat.shape")
-        # print(feat.shape)
-        # print("ctc_asr: feat_len")
-        # print(feat_len)
-        
-        # Encode features
-        enc, enc_len = self.encoder(feat, feat_len)
-        # print("ctc_asr: enc.shape")
-        # print(enc.shape)
+        waveform = rnn.pad_sequence(wave, batch_first=True)
+        enc, enc_len = self.hubert(waveform, wave_len)
+        if self.enable_rnn:
+            enc, enc_len = self.rnn_block(enc, enc_len)
         # Project hidden features to vocabularies
         logits = self.ctc_output_layer(enc)
 
-        return logits, enc_len, feat, feat_len
+        return logits, enc_len, None, None
 
     def cal_loss(self, logits, enc_len, feat, feat_len, text, text_len):
         ''' Computes CTC loss. '''
@@ -166,8 +129,8 @@ class ASR(BaseASR):
 
         log_probs = torch.log_softmax(logits, dim=2)
         
-        # print("ctc_asr: log_probs.transpose(0, 1).shape")
-        # print(log_probs.transpose(0, 1).shape)
+        # print("ctc_asr: log_probs.shape")
+        # print(log_probs.shape)
         # print(f"ctc_asr: enc_len:{enc_len}")
         # print("ctc_asr: text.shape")
         # print(text.shape)
